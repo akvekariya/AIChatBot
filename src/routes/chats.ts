@@ -189,11 +189,11 @@ router.get(
         id: chat._id,
         title: chat.title,
         topics: chat.topics,
-        messageCount: chat.messages.length,
+        messageCount: chat.messages?.length || 0,
         lastMessageAt: chat.lastMessageAt,
         createdAt: chat.createdAt,
-        lastMessage: chat.messages.length > 0 
-          ? chat.messages[chat.messages.length - 1] 
+        lastMessage: chat.messages && chat.messages.length > 0
+          ? chat.messages[chat.messages.length - 1]
           : null,
       }));
       
@@ -275,8 +275,8 @@ router.get(
           id: chat._id,
           title: chat.title,
           topics: chat.topics,
-          messages: chat.messages,
-          messageCount: chat.messages.length,
+          messages: chat.messages || [],
+          messageCount: chat.messages?.length || 0,
           createdAt: chat.createdAt,
           updatedAt: chat.updatedAt,
           lastMessageAt: chat.lastMessageAt,

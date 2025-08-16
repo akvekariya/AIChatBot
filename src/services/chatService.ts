@@ -209,13 +209,13 @@ export const getChatStats = async (userId: string): Promise<{
     let recentActivity: Date | null = null;
     
     for (const chat of activeChats) {
-      totalMessages += chat.messages.length;
-      
+      totalMessages += chat.messages?.length || 0;
+
       // Count topics
       for (const topic of chat.topics) {
         topicBreakdown[topic] = (topicBreakdown[topic] || 0) + 1;
       }
-      
+
       // Track most recent activity
       if (chat.lastMessageAt && (!recentActivity || chat.lastMessageAt > recentActivity)) {
         recentActivity = chat.lastMessageAt;

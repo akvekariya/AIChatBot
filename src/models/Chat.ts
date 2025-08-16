@@ -174,7 +174,7 @@ ChatSchema.statics.findUserChats = function(userId: string, limit: number = 20) 
   return this.find({ userId, isActive: true })
     .sort({ lastMessageAt: -1 })
     .limit(limit)
-    .select('title topics lastMessageAt createdAt')
+    .select('title topics lastMessageAt createdAt messages')
     .populate('userId', 'name email');
 };
 
@@ -195,12 +195,12 @@ ChatSchema.statics.createNewChat = function(userId: string, topics: ChatTopic[],
 
 // Virtual for message count
 ChatSchema.virtual('messageCount').get(function() {
-  return this.messages.length;
+  return this.messages?.length || 0;
 });
 
 // Virtual for last message
 ChatSchema.virtual('lastMessage').get(function() {
-  return this.messages.length > 0 ? this.messages[this.messages.length - 1] : null;
+  return this.messages && this.messages.length > 0 ? this.messages[this.messages.length - 1] : null;
 });
 
 // Ensure virtual fields are included in JSON output
