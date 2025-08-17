@@ -54,7 +54,7 @@ const ProfileSchema: Schema<IProfile> = new Schema(
     
     // Optimize JSON output
     toJSON: {
-      transform: function(doc, ret) {
+      transform: function(doc: any, ret: any) {
         ret.id = ret._id;
         delete ret._id;
         delete ret.__v;
@@ -115,7 +115,13 @@ ProfileSchema.virtual('user', {
 // Ensure virtual fields are included in JSON output
 ProfileSchema.set('toJSON', { virtuals: true });
 
+// Define interface for static methods
+interface IProfileModel extends Model<IProfile> {
+  findByUserId(userId: string): Promise<IProfile | null>;
+  createProfile(profileData: Partial<IProfile>): Promise<IProfile>;
+}
+
 // Create and export the Profile model
-const Profile: Model<IProfile> = mongoose.model<IProfile>('Profile', ProfileSchema);
+const Profile = mongoose.model<IProfile, IProfileModel>('Profile', ProfileSchema);
 
 export default Profile;

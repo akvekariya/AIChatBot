@@ -71,7 +71,7 @@ export const authenticateToken = async (
         };
       }
     } catch (error) {
-      console.log('Database validation failed, using token data for testing:', error.message);
+      console.log('Database validation failed, using token data for testing:', error instanceof Error ? error.message : String(error));
       // Create a mock user object from token data for testing
       user = {
         _id: { toString: () => tokenPayload.userId },
@@ -84,8 +84,8 @@ export const authenticateToken = async (
     }
 
     // Attach user information to request object
-    req.user = user;
-    req.userId = typeof user._id === 'string' ? user._id : user._id.toString();
+    req.user = user as IUser;
+    req.userId = typeof (user as any)._id === 'string' ? (user as any)._id : (user as any)._id.toString();
     req.tokenPayload = tokenPayload;
     
     next();
@@ -140,7 +140,7 @@ export const optionalAuth = async (
           
           if (user) {
             req.user = user;
-            req.userId = user._id.toString();
+            req.userId = (user as any)._id.toString();
             req.tokenPayload = tokenPayload;
           }
         }

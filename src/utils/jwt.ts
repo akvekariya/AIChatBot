@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { JWTPayload } from '../types';
 
 /**
@@ -21,7 +21,7 @@ export const generateToken = (payload: Omit<JWTPayload, 'iat' | 'exp'>): string 
       expiresIn: JWT_EXPIRES_IN,
       issuer: 'M32Backend',
       audience: 'M32Frontend',
-    });
+    } as SignOptions);
   } catch (error) {
     console.error('Error generating JWT token:', error);
     throw new Error('Failed to generate authentication token');

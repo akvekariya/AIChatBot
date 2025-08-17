@@ -147,7 +147,7 @@ export const hasCompleteProfile = async (userId: string): Promise<boolean> => {
     }
     
     // Check if required fields are present and valid
-    return (
+    return Boolean(
       profile.name &&
       profile.name.trim().length >= 2 &&
       profile.age &&

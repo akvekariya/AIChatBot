@@ -94,7 +94,7 @@ export const findOrCreateUser = async (googleProfile: GoogleProfile): Promise<{
     
     // Generate JWT token
     const tokenPayload: Omit<JWTPayload, 'iat' | 'exp'> = {
-      userId: user._id.toString(),
+      userId: (user as any)._id.toString(),
       email: user.email,
     };
     
@@ -159,7 +159,7 @@ export const updateLastLogin = async (userId: string): Promise<IUser | null> => 
   try {
     const user = await User.findById(userId);
     if (user) {
-      await user.updateLastLogin();
+      await (user as any).updateLastLogin();
       return user;
     }
     return null;

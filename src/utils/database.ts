@@ -103,7 +103,7 @@ export const performDatabaseHealthCheck = async (): Promise<{
   
   try {
     // Perform a simple database operation
-    await mongoose.connection.db.admin().ping();
+    await mongoose.connection.db?.admin().ping();
     
     const responseTime = Date.now() - startTime;
     const status = getDatabaseStatus();
@@ -139,6 +139,7 @@ export const getDatabaseStats = async (): Promise<{
 }> => {
   try {
     const db = mongoose.connection.db;
+    if (!db) throw new Error('Database connection not available');
     const stats = await db.stats();
     
     return {

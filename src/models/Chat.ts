@@ -120,7 +120,7 @@ const ChatSchema: Schema<IChat> = new Schema(
     
     // Optimize JSON output
     toJSON: {
-      transform: function(doc, ret) {
+      transform: function(doc: any, ret: any) {
         ret.id = ret._id;
         delete ret._id;
         delete ret.__v;
@@ -161,7 +161,7 @@ ChatSchema.methods.addMessage = function(message: Omit<IChatMessage, 'timestamp'
 ChatSchema.methods.getMessageHistory = function(limit: number = 50) {
   return this.messages
     .slice(-limit) // Get last N messages
-    .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    .sort((a: IChatMessage, b: IChatMessage) => a.timestamp.getTime() - b.timestamp.getTime());
 };
 
 ChatSchema.methods.deactivate = function() {
@@ -206,7 +206,14 @@ ChatSchema.virtual('lastMessage').get(function() {
 // Ensure virtual fields are included in JSON output
 ChatSchema.set('toJSON', { virtuals: true });
 
+// Define interface for static methods
+interface IChatModel extends Model<IChat> {
+  findUserChats(userId: string, limit?: number): Promise<IChat[]>;
+  findChatWithMessages(chatId: string, userId: string): Promise<IChat | null>;
+  createNewChat(userId: string, topics: ChatTopic[], title?: string): Promise<IChat>;
+}
+
 // Create and export the Chat model
-const Chat: Model<IChat> = mongoose.model<IChat>('Chat', ChatSchema);
+const Chat = mongoose.model<IChat, IChatModel>('Chat', ChatSchema);
 
 export default Chat;

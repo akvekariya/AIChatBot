@@ -47,6 +47,11 @@ export interface IChat extends BaseDocument {
   messages: IChatMessage[];
   isActive: boolean;
   lastMessageAt?: Date;
+
+  // Instance methods
+  addMessage(message: Omit<IChatMessage, 'timestamp' | 'messageId'>): Promise<IChat>;
+  getMessageHistory(limit?: number): IChatMessage[];
+  deactivate(): Promise<IChat>;
 }
 
 // AI Model types

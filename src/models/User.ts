@@ -57,7 +57,7 @@ const UserSchema: Schema<IUser> = new Schema(
     
     // Optimize JSON output by removing version key and transforming _id
     toJSON: {
-      transform: function(doc, ret) {
+      transform: function(doc: any, ret: any) {
         ret.id = ret._id;
         delete ret._id;
         delete ret.__v;
@@ -95,7 +95,13 @@ UserSchema.statics.findByEmail = function(email: string) {
   return this.findOne({ email: email.toLowerCase(), isActive: true });
 };
 
+// Define interface for static methods
+interface IUserModel extends Model<IUser> {
+  findByGoogleId(googleId: string): Promise<IUser | null>;
+  findByEmail(email: string): Promise<IUser | null>;
+}
+
 // Create and export the User model
-const User: Model<IUser> = mongoose.model<IUser>('User', UserSchema);
+const User = mongoose.model<IUser, IUserModel>('User', UserSchema);
 
 export default User;

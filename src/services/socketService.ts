@@ -69,7 +69,7 @@ export const initializeSocketIO = (httpServer: HTTPServer): SocketIOServer => {
           };
         }
       } catch (error) {
-        console.log('Socket.IO: Database validation failed, using token data for testing:', error.message);
+        console.log('Socket.IO: Database validation failed, using token data for testing:', error instanceof Error ? error.message : String(error));
         // Create a mock user object from token data for testing
         user = {
           _id: { toString: () => tokenPayload.userId },
@@ -82,7 +82,7 @@ export const initializeSocketIO = (httpServer: HTTPServer): SocketIOServer => {
       }
 
       // Attach user information to socket
-      socket.userId = typeof user._id === 'string' ? user._id : user._id.toString();
+      socket.userId = typeof (user as any)._id === 'string' ? (user as any)._id : (user as any)._id.toString();
       socket.user = user;
       
       console.log(`User authenticated via Socket.IO: ${user.email} (${socket.id})`);
@@ -117,7 +117,7 @@ export const initializeSocketIO = (httpServer: HTTPServer): SocketIOServer => {
         try {
           chat = await getChatById(chatId, socket.userId);
         } catch (error) {
-          console.log('Socket.IO: Chat validation failed, creating mock chat for testing:', error.message);
+          console.log('Socket.IO: Chat validation failed, creating mock chat for testing:', error instanceof Error ? error.message : String(error));
           // Create a mock chat for testing
           chat = {
             _id: chatId,
@@ -180,7 +180,7 @@ export const initializeSocketIO = (httpServer: HTTPServer): SocketIOServer => {
         try {
           chat = await getChatById(chatId, socket.userId);
         } catch (error) {
-          console.log('Socket.IO: Message chat validation failed, creating mock chat for testing:', error.message);
+          console.log('Socket.IO: Message chat validation failed, creating mock chat for testing:', error instanceof Error ? error.message : String(error));
           // Create a mock chat for testing
           chat = {
             _id: chatId,
@@ -206,7 +206,7 @@ export const initializeSocketIO = (httpServer: HTTPServer): SocketIOServer => {
         try {
           await addMessageToChat(chatId, socket.userId, userMessage);
         } catch (error) {
-          console.log('Socket.IO: Failed to save user message to DB, continuing for testing:', error.message);
+          console.log('Socket.IO: Failed to save user message to DB, continuing for testing:', error instanceof Error ? error.message : String(error));
         }
         
         // Broadcast user message to chat room
@@ -240,7 +240,7 @@ export const initializeSocketIO = (httpServer: HTTPServer): SocketIOServer => {
           try {
             await addMessageToChat(chatId, socket.userId, aiMessage);
           } catch (error) {
-            console.log('Socket.IO: Failed to save AI message to DB, continuing for testing:', error.message);
+            console.log('Socket.IO: Failed to save AI message to DB, continuing for testing:', error instanceof Error ? error.message : String(error));
           }
           
           // Broadcast AI message to chat room
