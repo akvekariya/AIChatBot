@@ -253,14 +253,14 @@ export const initializeSocketIO = (httpServer: HTTPServer): SocketIOServer => {
           )
         }
 
-        // Broadcast user message to chat room
+        // Broadcast user message to chat room (exclude sender to prevent duplicates)
         const userMessageWithTimestamp: IChatMessage = {
           ...userMessage,
           timestamp: new Date(),
           messageId: new Date().getTime().toString(),
         }
 
-        io.to(chatId).emit("message", {
+        socket.broadcast.to(chatId).emit("message", {
           message: userMessageWithTimestamp,
           chatId,
         })
@@ -298,7 +298,7 @@ export const initializeSocketIO = (httpServer: HTTPServer): SocketIOServer => {
             )
           }
 
-          // Broadcast AI message to chat room
+          // Broadcast AI message to chat room (send to all users in the room)
           const aiMessageWithTimestamp: IChatMessage = {
             ...aiMessage,
             timestamp: new Date(),
