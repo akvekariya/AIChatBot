@@ -1,5 +1,5 @@
-import { Chat } from '../models';
-import { IChat, IChatMessage, ChatTopic, StartChatRequest } from '../types';
+import { Chat } from "../models"
+import { IChat, IChatMessage, ChatTopic, StartChatRequest } from "../types"
 
 /**
  * Chat Service
@@ -19,34 +19,38 @@ export const createChat = async (
   try {
     // Validate topics
     if (!chatData.topics || chatData.topics.length === 0) {
-      throw new Error('At least one topic is required');
+      throw new Error("At least one topic is required")
     }
-    
+
     if (chatData.topics.length > 2) {
-      throw new Error('Maximum 2 topics allowed per chat');
+      throw new Error("Maximum 2 topics allowed per chat")
     }
-    
+
     // Validate topic values
-    const validTopics = Object.values(ChatTopic);
+    const validTopics = Object.values(ChatTopic)
     for (const topic of chatData.topics) {
       if (!validTopics.includes(topic)) {
-        throw new Error(`Invalid topic: ${topic}`);
+        throw new Error(`Invalid topic: ${topic}`)
       }
     }
-    
+
     // Generate title if not provided
-    const title = chatData.title || `${chatData.topics.join(' & ')} Chat`;
-    
+    const title = chatData.title || `${chatData.topics.join(" & ")} Chat`
+
     // Create new chat
-    const chat = await Chat.createNewChat(userId, chatData.topics, title);
-    
-    console.log(`New chat created for user: ${userId}, topics: ${chatData.topics.join(', ')}`);
-    return chat;
+    const chat = await Chat.createNewChat(userId, chatData.topics, title)
+
+    console.log(
+      `New chat created for user: ${userId}, topics: ${chatData.topics.join(
+        ", "
+      )}`
+    )
+    return chat
   } catch (error) {
-    console.error('Error creating chat:', error);
-    throw error;
+    console.error("Error creating chat:", error)
+    throw error
   }
-};
+}
 
 /**
  * Get chat by ID with user validation
@@ -54,15 +58,18 @@ export const createChat = async (
  * @param userId - User ID
  * @returns Chat document or null
  */
-export const getChatById = async (chatId: string, userId: string): Promise<IChat | null> => {
+export const getChatById = async (
+  chatId: string,
+  userId: string
+): Promise<IChat | null> => {
   try {
-    const chat = await Chat.findChatWithMessages(chatId, userId);
-    return chat;
+    const chat = await Chat.findChatWithMessages(chatId, userId)
+    return chat
   } catch (error) {
-    console.error('Error fetching chat:', error);
-    return null;
+    console.error("Error fetching chat:", error)
+    return null
   }
-};
+}
 
 /**
  * Get all chats for a user
@@ -70,15 +77,18 @@ export const getChatById = async (chatId: string, userId: string): Promise<IChat
  * @param limit - Maximum number of chats to return
  * @returns Array of chat documents
  */
-export const getUserChats = async (userId: string, limit: number = 20): Promise<IChat[]> => {
+export const getUserChats = async (
+  userId: string,
+  limit: number = 20
+): Promise<IChat[]> => {
   try {
-    const chats = await Chat.findUserChats(userId, limit);
-    return chats;
+    const chats = await Chat.findUserChats(userId, limit)
+    return chats
   } catch (error) {
-    console.error('Error fetching user chats:', error);
-    return [];
+    console.error("Error fetching user chats:", error)
+    return []
   }
-};
+}
 
 /**
  * Add a message to a chat
@@ -90,24 +100,24 @@ export const getUserChats = async (userId: string, limit: number = 20): Promise<
 export const addMessageToChat = async (
   chatId: string,
   userId: string,
-  message: Omit<IChatMessage, 'timestamp' | 'messageId'>
+  message: Omit<IChatMessage, "timestamp" | "messageId">
 ): Promise<IChat | null> => {
   try {
-    const chat = await Chat.findOne({ _id: chatId, userId, isActive: true });
-    
+    const chat = await Chat.findOne({ _id: chatId, userId, isActive: true })
+
     if (!chat) {
-      throw new Error('Chat not found or access denied');
+      throw new Error("Chat not found or access denied")
     }
-    
+
     // Add message to chat
-    await chat.addMessage(message);
-    
-    return chat;
+    await chat.addMessage(message)
+
+    return chat
   } catch (error) {
-    console.error('Error adding message to chat:', error);
-    throw error;
+    console.error("Error adding message to chat:", error)
+    throw error
   }
-};
+}
 
 /**
  * Get chat message history
@@ -122,18 +132,18 @@ export const getChatHistory = async (
   limit: number = 50
 ): Promise<IChatMessage[]> => {
   try {
-    const chat = await Chat.findOne({ _id: chatId, userId, isActive: true });
-    
+    const chat = await Chat.findOne({ _id: chatId, userId, isActive: true })
+
     if (!chat) {
-      throw new Error('Chat not found or access denied');
+      throw new Error("Chat not found or access denied")
     }
-    
-    return chat.getMessageHistory(limit);
+
+    return chat.getMessageHistory(limit)
   } catch (error) {
-    console.error('Error fetching chat history:', error);
-    throw error;
+    console.error("Error fetching chat history:", error)
+    throw error
   }
-};
+}
 
 /**
  * Delete a chat (soft delete)
@@ -141,22 +151,25 @@ export const getChatHistory = async (
  * @param userId - User ID
  * @returns Success status
  */
-export const deleteChat = async (chatId: string, userId: string): Promise<boolean> => {
+export const deleteChat = async (
+  chatId: string,
+  userId: string
+): Promise<boolean> => {
   try {
-    const chat = await Chat.findOne({ _id: chatId, userId, isActive: true });
-    
+    const chat = await Chat.findOne({ _id: chatId, userId, isActive: true })
+
     if (!chat) {
-      return false;
+      return false
     }
-    
-    await chat.deactivate();
-    console.log(`Chat deleted: ${chatId} for user: ${userId}`);
-    return true;
+
+    await chat.deactivate()
+    console.log(`Chat deleted: ${chatId} for user: ${userId}`)
+    return true
   } catch (error) {
-    console.error('Error deleting chat:', error);
-    return false;
+    console.error("Error deleting chat:", error)
+    return false
   }
-};
+}
 
 /**
  * Update chat title
@@ -171,75 +184,80 @@ export const updateChatTitle = async (
   newTitle: string
 ): Promise<IChat | null> => {
   try {
-    const chat = await Chat.findOne({ _id: chatId, userId, isActive: true });
-    
+    const chat = await Chat.findOne({ _id: chatId, userId, isActive: true })
+
     if (!chat) {
-      throw new Error('Chat not found or access denied');
+      throw new Error("Chat not found or access denied")
     }
-    
-    chat.title = newTitle.trim();
-    await chat.save();
-    
-    console.log(`Chat title updated: ${chatId} for user: ${userId}`);
-    return chat;
+
+    chat.title = newTitle.trim()
+    await chat.save()
+
+    console.log(`Chat title updated: ${chatId} for user: ${userId}`)
+    return chat
   } catch (error) {
-    console.error('Error updating chat title:', error);
-    throw error;
+    console.error("Error updating chat title:", error)
+    throw error
   }
-};
+}
 
 /**
  * Get chat statistics for a user
  * @param userId - User ID
  * @returns Chat statistics
  */
-export const getChatStats = async (userId: string): Promise<{
-  totalChats: number;
-  activeChats: number;
-  totalMessages: number;
-  topicBreakdown: { [key in ChatTopic]?: number };
-  recentActivity: Date | null;
+export const getChatStats = async (
+  userId: string
+): Promise<{
+  totalChats: number
+  activeChats: number
+  totalMessages: number
+  topicBreakdown: { [key in ChatTopic]?: number }
+  recentActivity: Date | null
 }> => {
   try {
-    const chats = await Chat.find({ userId });
-    const activeChats = chats.filter(chat => chat.isActive);
-    
-    let totalMessages = 0;
-    const topicBreakdown: { [key in ChatTopic]?: number } = {};
-    let recentActivity: Date | null = null;
-    
+    const chats = await Chat.find({ userId })
+    const activeChats = chats.filter((chat) => chat.isActive)
+
+    let totalMessages = 0
+    const topicBreakdown: { [key in ChatTopic]?: number } = {}
+    let recentActivity: Date | null = null
+
     for (const chat of activeChats) {
-      totalMessages += chat.messages?.length || 0;
+      totalMessages += chat.messages?.length || 0
 
       // Count topics
       for (const topic of chat.topics) {
-        topicBreakdown[topic] = (topicBreakdown[topic] || 0) + 1;
+        topicBreakdown[topic] = (topicBreakdown[topic] || 0) + 1
       }
 
       // Track most recent activity
-      if (chat.lastMessageAt && (!recentActivity || chat.lastMessageAt > recentActivity)) {
-        recentActivity = chat.lastMessageAt;
+      if (
+        chat.lastMessageAt &&
+        (!recentActivity || chat.lastMessageAt > recentActivity)
+      ) {
+        recentActivity = chat.lastMessageAt
       }
     }
-    
+
     return {
       totalChats: chats.length,
       activeChats: activeChats.length,
       totalMessages,
       topicBreakdown,
       recentActivity,
-    };
+    }
   } catch (error) {
-    console.error('Error getting chat stats:', error);
+    console.error("Error getting chat stats:", error)
     return {
       totalChats: 0,
       activeChats: 0,
       totalMessages: 0,
       topicBreakdown: {},
       recentActivity: null,
-    };
+    }
   }
-};
+}
 
 /**
  * Search chats by title or content
@@ -254,65 +272,67 @@ export const searchChats = async (
   limit: number = 10
 ): Promise<IChat[]> => {
   try {
-    const searchRegex = new RegExp(query, 'i'); // Case-insensitive search
-    
+    const searchRegex = new RegExp(query, "i") // Case-insensitive search
+
     const chats = await Chat.find({
       userId,
       isActive: true,
       $or: [
         { title: { $regex: searchRegex } },
-        { 'messages.text': { $regex: searchRegex } },
+        { "messages.text": { $regex: searchRegex } },
       ],
     })
-    .sort({ lastMessageAt: -1 })
-    .limit(limit)
-    .populate('userId', 'name email');
-    
-    return chats;
+      .sort({ lastMessageAt: -1 })
+      .limit(limit)
+      .populate("userId", "name email")
+
+    return chats
   } catch (error) {
-    console.error('Error searching chats:', error);
-    return [];
+    console.error("Error searching chats:", error)
+    return []
   }
-};
+}
 
 /**
  * Validate chat data
  * @param chatData - Chat data to validate
  * @returns Validation result
  */
-export const validateChatData = (chatData: StartChatRequest): {
-  isValid: boolean;
-  errors: string[];
+export const validateChatData = (
+  chatData: StartChatRequest
+): {
+  isValid: boolean
+  errors: string[]
 } => {
-  const errors: string[] = [];
-  
+  const errors: string[] = []
+
   // Validate topics
   if (!chatData.topics || !Array.isArray(chatData.topics)) {
-    errors.push('Topics must be an array');
+    errors.push("Topics must be an array")
   } else {
     if (chatData.topics.length === 0) {
-      errors.push('At least one topic is required');
+      errors.push("At least one topic is required")
     } else if (chatData.topics.length > 2) {
-      errors.push('Maximum 2 topics allowed');
+      errors.push("Maximum 2 topics allowed")
     }
-    
-    const validTopics = Object.values(ChatTopic);
+
+    const validTopics = Object.values(ChatTopic)
     for (const topic of chatData.topics) {
       if (!validTopics.includes(topic)) {
-        errors.push(`Invalid topic: ${topic}`);
+        errors.push(`Invalid topic: ${topic}`)
       }
     }
   }
-  
+
   // Validate title (optional)
-  if (chatData.title && typeof chatData.title !== 'string') {
-    errors.push('Title must be a string');
+  if (chatData.title && typeof chatData.title !== "string") {
+    errors.push("Title must be a string")
   } else if (chatData.title && chatData.title.trim().length > 100) {
-    errors.push('Title cannot exceed 100 characters');
+    errors.push("Title cannot exceed 100 characters")
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors,
-  };
-};
+  }
+}

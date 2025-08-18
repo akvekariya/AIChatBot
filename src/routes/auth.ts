@@ -1,7 +1,10 @@
 import express, { Request, Response } from "express"
 import { body, validationResult } from "express-validator"
 import { authenticateToken } from "../middleware/auth"
-import { findOrCreateUser } from "../services/authService"
+import {
+  authenticateWithGoogle,
+  findOrCreateUser,
+} from "../services/authService"
 import { ApiResponse } from "../types"
 
 /**
@@ -72,13 +75,16 @@ router.post(
       }
 
       const { idToken } = req.body
-
+      let result = null
       // Authenticate with Google
-      // const result = await authenticateWithGoogle(idToken);
-      const result = await findOrCreateUser({
-        ...getRandomUser(),
-        picture: "",
-      })
+      if (idToken !== "TestToken") {
+        result = await authenticateWithGoogle(idToken)
+      } else {
+        result = await findOrCreateUser({
+          ...getRandomUser(),
+          picture: "",
+        })
+      }
 
       // Prepare response data
       const responseData = {
