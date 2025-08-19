@@ -1,5 +1,5 @@
 import mongoose, { Schema, Model } from 'mongoose';
-import { IChat, IChatMessage, ChatTopic } from '../types';
+import { IChat, IChatMessage, ChatTopic, IUserInfo } from '../types';
 
 /**
  * Chat Message Sub-Schema
@@ -113,6 +113,22 @@ const ChatSchema: Schema<IChat> = new Schema(
       type: Date,
       default: Date.now,
     },
+
+    // Session memory/context for this chat
+    sessionContext: {
+      type: Map,
+      of: Schema.Types.Mixed,
+      default: new Map(),
+    },
+
+    // User information extracted from conversation
+    userInfo: {
+      name: { type: String, default: '' },
+      preferences: { type: Map, of: String, default: new Map() },
+      interests: { type: [String], default: [] },
+      goals: { type: [String], default: [] },
+      lastUpdated: { type: Date, default: Date.now },
+    },
   },
   {
     // Automatically add createdAt and updatedAt timestamps
@@ -166,6 +182,31 @@ ChatSchema.methods.getMessageHistory = function(limit: number = 50) {
 
 ChatSchema.methods.deactivate = function() {
   this.isActive = false;
+  return this.save();
+};
+
+// Session context management methods
+ChatSchema.methods.updateSessionContext = function(key: string, value: any) {
+  if (!this.sessionContext) {
+    this.sessionContext = new Map();
+  }
+  this.sessionContext.set(key, value);
+  return this.save();
+};
+
+ChatSchema.methods.updateUserInfo = function(info: Partial<IUserInfo>) {
+  if (!this.userInfo) {
+    this.userInfo = {
+      name: '',
+      preferences: new Map(),
+      interests: [],
+      goals: [],
+      lastUpdated: new Date(),
+    };
+  }
+
+  Object.assign(this.userInfo, info);
+  this.userInfo.lastUpdated = new Date();
   return this.save();
 };
 

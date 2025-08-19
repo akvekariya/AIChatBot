@@ -5,6 +5,7 @@ import { verifyToken } from "../utils/jwt"
 import { generateAIResponse } from "./aiService"
 import { validateUserSession } from "./authService"
 import { addMessageToChat, getChatById, getChatHistory } from "./chatService"
+import SessionMemoryService from "./sessionMemoryService"
 
 /**
  * Socket.IO Service
@@ -269,7 +270,10 @@ export const initializeSocketIO = (httpServer: HTTPServer): SocketIOServer => {
           `Message sent in chat ${chatId}: ${text.substring(0, 50)}...`
         )
 
-        // Generate AI response
+        // Extract and store user information from the message
+        await SessionMemoryService.extractAndStoreUserInfo(chatId, text, 'user')
+
+        // Generate AI response with session memory
         socket.emit("ai_thinking", {
           chatId,
           message: "AI is generating response...",
@@ -277,7 +281,8 @@ export const initializeSocketIO = (httpServer: HTTPServer): SocketIOServer => {
 
         const aiResponse = await generateAIResponse(
           text,
-          chat.topics as ChatTopic[]
+          chat.topics as ChatTopic[],
+          chatId // Pass chatId for session memory
         )
 
         if (aiResponse.success && aiResponse.text) {

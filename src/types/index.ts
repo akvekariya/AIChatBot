@@ -39,6 +39,15 @@ export enum ChatTopic {
   EDUCATION = 'education'
 }
 
+// Session context and user info interfaces
+export interface IUserInfo {
+  name?: string;
+  preferences?: Map<string, string>;
+  interests?: string[];
+  goals?: string[];
+  lastUpdated?: Date;
+}
+
 // Chat related interfaces
 export interface IChat extends BaseDocument {
   userId: Types.ObjectId;
@@ -47,11 +56,15 @@ export interface IChat extends BaseDocument {
   messages: IChatMessage[];
   isActive: boolean;
   lastMessageAt?: Date;
+  sessionContext?: Map<string, any>;
+  userInfo?: IUserInfo;
 
   // Instance methods
   addMessage(message: Omit<IChatMessage, 'timestamp' | 'messageId'>): Promise<IChat>;
   getMessageHistory(limit?: number): IChatMessage[];
   deactivate(): Promise<IChat>;
+  updateSessionContext(key: string, value: any): Promise<IChat>;
+  updateUserInfo(info: Partial<IUserInfo>): Promise<IChat>;
 }
 
 // AI Model types

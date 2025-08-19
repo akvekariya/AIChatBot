@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { AIModel, AIResponse, ChatTopic } from '../types';
 import logger from '../utils/logger';
+import SessionMemoryService from './sessionMemoryService';
 
 /**
  * AI Service
@@ -151,19 +152,31 @@ const selectModel = (topics: ChatTopic[]): AIModel => {
 };
 
 /**
- * Generate AI response with fallback mechanism
+ * Generate AI response with fallback mechanism and session memory
  * @param prompt - User prompt
  * @param topics - Chat topics for context
+ * @param chatId - Chat ID for session memory (optional)
  * @param preferredModel - Preferred AI model (optional)
  * @returns AI response with fallback handling
  */
 export const generateAIResponse = async (
   prompt: string,
   topics: ChatTopic[],
+  chatId?: string,
   preferredModel?: AIModel
 ): Promise<AIResponse> => {
   const selectedModel = preferredModel || selectModel(topics);
-  
+
+  // Build enhanced prompt with session memory
+  let enhancedPrompt = prompt;
+  if (chatId) {
+    const sessionContext = await SessionMemoryService.buildContextForAI(chatId);
+    if (sessionContext) {
+      enhancedPrompt = `Context from previous conversation:\n${sessionContext}\n\nCurrent message: ${prompt}`;
+      logger.info(`Enhanced prompt with session context for chat ${chatId}`);
+    }
+  }
+
   // Define model call functions
   const modelFunctions = {
     [AIModel.GPT4]: callGPT4,
@@ -171,10 +184,10 @@ export const generateAIResponse = async (
     [AIModel.MISTRAL]: callMistral,
     [AIModel.COMPOSIO]: callComposio,
   };
-  
+
   // Try primary model (GPT-4 only)
-  logger.info(`Attempting to use ${selectedModel} for prompt: ${prompt.substring(0, 50)}...`);
-  let response = await modelFunctions[selectedModel](prompt, topics);
+  logger.info(`Attempting to use ${selectedModel} for prompt: ${enhancedPrompt.substring(0, 50)}...`);
+  let response = await modelFunctions[selectedModel](enhancedPrompt, topics);
 
   if (response.success) {
     logger.info(`${selectedModel} responded successfully in ${response.responseTime}ms`);
