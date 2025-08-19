@@ -1,6 +1,6 @@
 import { OAuth2Client } from "google-auth-library"
-import { User } from "../models"
-import { GoogleProfile, IUser, JWTPayload } from "../types"
+import { Profile, User } from "../models"
+import { GoogleProfile, IProfile, IUser, JWTPayload } from "../types"
 import { generateToken } from "../utils/jwt"
 
 /**
@@ -66,11 +66,13 @@ export const findOrCreateUser = async (
   user: IUser
   token: string
   isNewUser: boolean
+  profile?: IProfile | null
 }> => {
   try {
     // Check if user already exists
     let user = await User.findByGoogleId(googleProfile.id)
     let isNewUser = false
+    let profile: IProfile | null = null
 
     if (!user) {
       // Create new user if doesn't exist
@@ -93,6 +95,9 @@ export const findOrCreateUser = async (
         user.profilePicture = googleProfile.picture
       }
       await user.save()
+
+      // Fetch existing user's profile data
+      profile = await Profile.findByUserId((user as any)._id.toString())
       console.log(`Existing user logged in: ${user.email}`)
     }
 
@@ -108,6 +113,7 @@ export const findOrCreateUser = async (
       user,
       token,
       isNewUser,
+      profile,
     }
   } catch (error) {
     console.error("Error finding or creating user:", error)
@@ -126,6 +132,7 @@ export const authenticateWithGoogle = async (
   user: IUser
   token: string
   isNewUser: boolean
+  profile?: IProfile | null
 }> => {
   try {
     // Verify Google token and get profile

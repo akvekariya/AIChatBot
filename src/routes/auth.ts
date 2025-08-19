@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express"
 import { body, validationResult } from "express-validator"
 import { authenticateToken } from "../middleware/auth"
+import { Profile } from "../models"
 import {
   authenticateWithGoogle,
   findOrCreateUser,
@@ -82,6 +83,7 @@ router.post(
       } else {
         result = await findOrCreateUser({
           ...getRandomUser(),
+          id: idToken,
           picture: "",
         })
       }
@@ -98,6 +100,16 @@ router.post(
         },
         token: result.token,
         isNewUser: result.isNewUser,
+        profile: result.profile
+          ? {
+              id: result.profile.id,
+              name: result.profile.name,
+              age: result.profile.age,
+              additionalInfo: result.profile.additionalInfo,
+              createdAt: result.profile.createdAt,
+              updatedAt: result.profile.updatedAt,
+            }
+          : null,
       }
 
       res.status(200).json({
@@ -138,15 +150,30 @@ router.get(
         return
       }
 
-      // Return user information
+      // Fetch user's profile data
+      const profile = await Profile.findByUserId(
+        (req.user as any)._id.toString()
+      )
+
+      // Return user information with profile data
       const userData = {
-        id: req.user._id,
-        email: req.user.email,
-        name: req.user.name,
-        profilePicture: req.user.profilePicture,
-        isActive: req.user.isActive,
-        lastLogin: req.user.lastLogin,
-        createdAt: req.user.createdAt,
+        id: (req.user as any)._id,
+        email: (req.user as any).email,
+        name: (req.user as any).name,
+        profilePicture: (req.user as any).profilePicture,
+        isActive: (req.user as any).isActive,
+        lastLogin: (req.user as any).lastLogin,
+        createdAt: (req.user as any).createdAt,
+        profile: profile
+          ? {
+              id: profile.id,
+              name: profile.name,
+              age: profile.age,
+              additionalInfo: profile.additionalInfo,
+              createdAt: profile.createdAt,
+              updatedAt: profile.updatedAt,
+            }
+          : null,
       }
 
       res.status(200).json({
